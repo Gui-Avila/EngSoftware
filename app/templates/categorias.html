@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}FinTrack — Categorias{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Categorias</h1>
+
+<div class="card section-gap">
+    <div class="card-header">
+        <h2>Nova categoria</h2>
+    </div>
+    <form id="form-categoria" class="form-grid">
+        <div class="form-group">
+            <label for="cat-nome">Nome</label>
+            <input type="text" id="cat-nome" placeholder="Ex: Alimentação" required>
+        </div>
+        <div class="form-group">
+            <label for="cat-limite">Limite mensal (opcional)</label>
+            <input type="number" id="cat-limite" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-actions full-width">
+            <button type="submit" class="btn btn-primary">Criar categoria</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Categorias cadastradas</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Limite mensal</th>
+                    <th>ID</th>
+                </tr>
+            </thead>
+            <tbody id="categorias-list">
+                <tr><td colspan="3" class="empty-state">Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+async function loadCategorias() {
+    const cats = await api("/categorias");
+    const tbody = document.getElementById("categorias-list");
+    if (cats.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhuma categoria</td></tr>';
+        return;
+    }
+    tbody.innerHTML = cats.map(c => `<tr>
+        <td>${esc(c.nome)}</td>
+        <td>${c.limite_mensal ? "R$ " + parseFloat(c.limite_mensal).toFixed(2) : "—"}</td>
+        <td style="color:var(--text-muted);font-size:0.75rem">${c.id.slice(0,8)}...</td>
+    </tr>`).join("");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadCategorias();
+
+    document.getElementById("form-categoria").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("cat-nome").value.trim();
+        const limiteVal = document.getElementById("cat-limite").value;
+        const body = { nome };
+        if (limiteVal) body.limite_mensal = limiteVal;
+
+        const res = await fetch("/categorias", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            toast(data.erro || "Erro ao criar categoria", "error");
+            return;
+        }
+        toast(`Categoria "${data.nome}" criada`);
+        document.getElementById("form-categoria").reset();
+        loadCategorias();
+    });
+});
+</script>
+{% endblock %}

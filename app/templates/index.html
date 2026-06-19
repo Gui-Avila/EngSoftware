@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}FinTrack — Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Dashboard</h1>
+
+<div class="dashboard-stats" id="stats">
+    <div class="stat-card">
+        <div class="stat-label">Saldo atual</div>
+        <div class="stat-value neutral" id="saldo">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total entradas</div>
+        <div class="stat-value positive" id="entradas">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total saídas</div>
+        <div class="stat-value negative" id="saidas">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Transações</div>
+        <div class="stat-value neutral" id="num-transacoes">—</div>
+    </div>
+</div>
+
+<div class="card section-gap">
+    <div class="card-header">
+        <h2>Por categoria</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Total</th>
+                    <th style="width:40%"></th>
+                </tr>
+            </thead>
+            <tbody id="cat-totals">
+                <tr><td colspan="3" class="empty-state">Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Últimas transações</h2>
+        <a href="{{ url_for('frontend.transacoes') }}" class="btn btn-ghost btn-sm">Ver todas</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th style="text-align:right">Valor</th>
+                </tr>
+            </thead>
+            <tbody id="recent-transacoes">
+                <tr><td colspan="4" class="empty-state">Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const [saldoRes, transRes, catRes] = await Promise.all([
+        api("/saldo"),
+        api("/transacoes"),
+        api("/relatorios/por-categoria"),
+    ]);
+
+    const saldo = parseFloat(saldoRes.saldo);
+    const saldoEl = document.getElementById("saldo");
+    saldoEl.textContent = formatCurrency(saldo);
+    saldoEl.className = "stat-value " + (saldo >= 0 ? "positive" : "negative");
+
+    let entradas = 0, saidas = 0;
+    transRes.forEach(t => {
+        const v = parseFloat(t.valor);
+        if (t.tipo === "ENTRADA") entradas += v;
+        else saidas += v;
+    });
+
+    document.getElementById("entradas").textContent = formatCurrency(entradas);
+    document.getElementById("saidas").textContent = formatCurrency(saidas);
+    document.getElementById("num-transacoes").textContent = transRes.length;
+
+    // Category totals
+    const tbody = document.getElementById("cat-totals");
+    if (catRes.categorias.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhuma categoria cadastrada</td></tr>';
+    } else {
+        const maxAbs = Math.max(...catRes.categorias.map(c => Math.abs(parseFloat(c.total))), 1);
+        tbody.innerHTML = catRes.categorias.map(c => {
+            const total = parseFloat(c.total);
+            const pct = Math.round((Math.abs(total) / maxAbs) * 100);
+            const cls = total >= 0 ? "entrada" : "saida";
+            const valCls = total >= 0 ? "valor-positivo" : "valor-negativo";
+            return `<tr>
+                <td>${esc(c.nome)}</td>
+                <td class="${valCls}">${formatCurrency(total)}</td>
+                <td><div class="bar-container"><div class="bar bar-${cls}" style="width:${pct}%"></div></div></td>
+            </tr>`;
+        }).join("");
+    }
+
+    // Recent transactions (last 5)
+    const recent = transRes.slice(-5).reverse();
+    const rtbody = document.getElementById("recent-transacoes");
+    if (recent.length === 0) {
+        rtbody.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhuma transação</td></tr>';
+    } else {
+        rtbody.innerHTML = recent.map(t => {
+            const val = parseFloat(t.valor);
+            const sign = t.tipo === "ENTRADA" ? "+" : "-";
+            const cls = t.tipo === "ENTRADA" ? "valor-positivo" : "valor-negativo";
+            return `<tr>
+                <td>${formatDate(t.data)}</td>
+                <td>${esc(t.descricao)}</td>
+                <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
+                <td style="text-align:right" class="${cls}">${sign} R$ ${val.toFixed(2)}</td>
+            </tr>`;
+        }).join("");
+    }
+});
+</script>
+{% endblock %}

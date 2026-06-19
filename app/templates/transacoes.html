@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}FinTrack — Transações{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Transações</h1>
+
+<div class="card section-gap">
+    <div class="card-header">
+        <h2>Nova transação</h2>
+    </div>
+    <form id="form-transacao" class="form-grid">
+        <div class="form-group">
+            <label for="tr-descricao">Descrição</label>
+            <input type="text" id="tr-descricao" placeholder="Ex: Salário" required>
+        </div>
+        <div class="form-group">
+            <label for="tr-valor">Valor (R$)</label>
+            <input type="number" id="tr-valor" step="0.01" min="0.01" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+            <label for="tr-tipo">Tipo</label>
+            <select id="tr-tipo" required>
+                <option value="ENTRADA">Entrada</option>
+                <option value="SAIDA">Saída</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="tr-categoria">Categoria</label>
+            <select id="tr-categoria" required>
+                <option value="">Carregando...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="tr-data">Data (opcional)</label>
+            <input type="date" id="tr-data">
+        </div>
+        <div class="form-actions full-width">
+            <button type="submit" class="btn btn-primary">Registrar transação</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Todas as transações</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th style="text-align:right">Valor</th>
+                </tr>
+            </thead>
+            <tbody id="transacoes-list">
+                <tr><td colspan="4" class="empty-state">Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+async function loadCategoriaSelect() {
+    const cats = await api("/categorias");
+    const sel = document.getElementById("tr-categoria");
+    if (cats.length === 0) {
+        sel.innerHTML = '<option value="">Crie uma categoria primeiro</option>';
+        return;
+    }
+    sel.innerHTML = cats.map(c =>
+        `<option value="${c.id}">${esc(c.nome)}</option>`
+    ).join("");
+}
+
+async function loadTransacoes() {
+    const trans = await api("/transacoes");
+    const tbody = document.getElementById("transacoes-list");
+    if (trans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhuma transação</td></tr>';
+        return;
+    }
+    const sorted = trans.sort((a, b) => b.data.localeCompare(a.data));
+    tbody.innerHTML = sorted.map(t => {
+        const val = parseFloat(t.valor);
+        const sign = t.tipo === "ENTRADA" ? "+" : "-";
+        const cls = t.tipo === "ENTRADA" ? "valor-positivo" : "valor-negativo";
+        return `<tr>
+            <td>${formatDate(t.data)}</td>
+            <td>${esc(t.descricao)}</td>
+            <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
+            <td style="text-align:right" class="${cls}">${sign} R$ ${val.toFixed(2)}</td>
+        </tr>`;
+    }).join("");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadCategoriaSelect();
+    loadTransacoes();
+
+    document.getElementById("form-transacao").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const body = {
+            descricao: document.getElementById("tr-descricao").value.trim(),
+            valor: document.getElementById("tr-valor").value,
+            tipo: document.getElementById("tr-tipo").value,
+            categoria_id: document.getElementById("tr-categoria").value,
+        };
+        const dataVal = document.getElementById("tr-data").value;
+        if (dataVal) body.data = dataVal;
+
+        const res = await fetch("/transacoes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            toast(data.erro || "Erro ao criar transação", "error");
+            return;
+        }
+        toast(`Transação "${data.descricao}" registrada`);
+        document.getElementById("form-transacao").reset();
+        loadCategoriaSelect();
+        loadTransacoes();
+    });
+});
+</script>
+{% endblock %}

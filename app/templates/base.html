@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FinTrack{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('frontend.index') }}" class="navbar-brand">FinTrack</a>
+        <div class="navbar-links">
+            <a href="{{ url_for('frontend.index') }}" class="{% if active == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('frontend.categorias') }}" class="{% if active == 'categorias' %}active{% endif %}">Categorias</a>
+            <a href="{{ url_for('frontend.transacoes') }}" class="{% if active == 'transacoes' %}active{% endif %}">Transações</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>FinTrack &mdash; Engenharia de Software, PUC-Rio</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
