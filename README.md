@@ -6,12 +6,51 @@ O FinTrack permite registrar transações financeiras (entradas e saídas), orga
 
 ---
 
+## Guia rápido para a equipe
+
+Se você está lendo isso para se preparar para a apresentação, este é o caminho:
+
+1. **Rode o projeto** — siga [Como rodar](#como-rodar) e abra `http://127.0.0.1:5000` no navegador. Crie categorias, registre transações, veja o dashboard funcionando.
+2. **Rode os testes** — `pytest --cov` mostra 39 testes passando e 100% de cobertura em domain + use cases.
+3. **Entenda a arquitetura** — leia [Clean Architecture](#clean-architecture--mapa-detalhado) e [SOLID](#solid--onde-e-por-quê) neste README. Esses são os dois temas centrais da avaliação (4 pontos juntos).
+4. **Leia a documentação de engenharia** — a pasta [`docs/`](docs/README.md) contém o processo ágil completo: backlog, user stories com critérios BDD, Definition of Ready/Done, sprint board e matriz de rastreabilidade.
+5. **Mapeie para a rubrica** — a seção [Critérios de avaliação](#critérios-de-avaliação--mapeamento) no final deste README mostra exatamente onde cada ponto da nota está coberto.
+
+### O que foi construído
+
+| Aspecto | Entrega |
+|---|---|
+| **Entidades de domínio** | `Transacao` e `Categoria` — objetos puros com validação de negócio |
+| **Casos de uso** | 5: `CriarTransacao`, `CriarCategoria`, `ListarTransacoes`, `CalcularSaldo`, `TotalPorCategoria` |
+| **Histórias de usuário** | 4: registrar transação, criar categoria, consultar saldo, totais por categoria |
+| **API REST** | 6 endpoints JSON (`POST/GET /categorias`, `POST/GET /transacoes`, `GET /saldo`, `GET /relatorios/por-categoria`) |
+| **Frontend** | Dashboard com saldo + gráficos, página de categorias, página de transações |
+| **Testes** | 39 testes unitários (domain + use cases), 100% cobertura, isolados com fakes in-memory |
+| **Arquitetura** | Clean Architecture em 4 camadas, SOLID aplicado em todas, padrão Adapter (GoF) |
+| **Qualidade** | PEP-8 via Ruff, zero warnings |
+| **Processo ágil** | Documentado em [`docs/`](docs/README.md) — backlog, épicos, features, user stories BDD, DoR, DoD, sprint board, rastreabilidade |
+
+### Tech stack
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| Python | 3.12 | Linguagem |
+| Flask | >= 3.0 | Framework web (rotas + templates Jinja2) |
+| SQLite | stdlib | Persistência (via sqlite3, sem ORM) |
+| pytest | >= 8.0 | Testes unitários |
+| pytest-cov | >= 5.0 | Cobertura de código |
+| Ruff | >= 0.4 | Linter (PEP-8) |
+
+---
+
 ## Sumário
 
+- [Guia rápido para a equipe](#guia-rápido-para-a-equipe)
 - [Como rodar](#como-rodar)
 - [Como testar](#como-testar)
 - [Lint (PEP-8)](#lint-pep-8)
 - [Estrutura de pastas](#estrutura-de-pastas)
+- [Documentação de engenharia (docs/)](#documentação-de-engenharia-docs)
 - [Clean Architecture — mapa detalhado](#clean-architecture--mapa-detalhado)
   - [Camada 1: Entities (domain/)](#camada-1-entities--domain)
   - [Camada 2: Use Cases (use_cases/)](#camada-2-use-cases--use_cases)
@@ -102,6 +141,14 @@ fintrack/
 ├── pyproject.toml                          # Configuração pytest + cov + ruff
 ├── .gitignore
 │
+├── docs/                                   # DOCUMENTAÇÃO DE ENGENHARIA
+│   ├── README.md                           #   Índice navegável
+│   ├── 01-product/                         #   Visão, personas, stakeholders
+│   ├── 02-backlog/                         #   Épicos, features, user stories (BDD)
+│   ├── 03-process/                         #   DoR, DoD, story points, sprint plan
+│   ├── 04-board/                           #   Quadro Kanban / Scrum Board
+│   └── 05-traceability/                    #   Matriz história ↔ código ↔ teste
+│
 ├── domain/                                 # CAMADA 1 — Entities
 │   ├── entities/
 │   │   ├── transacao.py                    #   Transacao + TipoTransacao(Enum)
@@ -112,11 +159,11 @@ fintrack/
 │   ├── interfaces/                         #   ABCs dos repositórios (DIP + ISP)
 │   │   ├── transacao_repository.py
 │   │   └── categoria_repository.py
-│   ├── criar_transacao.py                  #   HU-01
-│   ├── criar_categoria.py                 #   HU-02
-│   ├── listar_transacoes.py               #   HU-01/HU-03
-│   ├── calcular_saldo.py                  #   HU-03
-│   └── total_por_categoria.py             #   HU-04
+│   ├── criar_transacao.py                  #   US-01
+│   ├── criar_categoria.py                 #   US-02
+│   ├── listar_transacoes.py               #   US-01 / US-03
+│   ├── calcular_saldo.py                  #   US-03
+│   └── total_por_categoria.py             #   US-04
 │
 ├── infra/                                  # CAMADA 4 — Frameworks & Drivers
 │   ├── db/
@@ -126,7 +173,7 @@ fintrack/
 │       └── categoria_repository_sqlite.py
 │
 ├── app/                                    # CAMADA 3 — Interface Adapters
-│   ├── main.py                            #   Factory create_app() + wiring
+│   ├── main.py                            #   Factory create_app() + wiring DI
 │   ├── routes/
 │   │   ├── categoria_routes.py            #   Blueprint JSON
 │   │   ├── transacao_routes.py            #   Blueprint JSON
@@ -152,6 +199,27 @@ fintrack/
         ├── test_calcular_saldo.py         # 4 testes
         └── test_total_por_categoria.py    # 4 testes
 ```
+
+---
+
+## Documentação de engenharia (`docs/`)
+
+A pasta [`docs/`](docs/README.md) contém a documentação de processo ágil — o "board" do projeto materializado em arquivos versionados. Tudo ancorado no código real.
+
+| O que você quer saber | Onde encontrar |
+|---|---|
+| O que é o produto, para quem, qual o escopo | [`docs/01-product/product-vision.md`](docs/01-product/product-vision.md) |
+| Quem são os usuários (personas) | [`docs/01-product/personas.md`](docs/01-product/personas.md) — João (universitário) e Marina (freelancer) |
+| Hierarquia do backlog (Épico → Feature → US) | [`docs/02-backlog/backlog-overview.md`](docs/02-backlog/backlog-overview.md) |
+| User stories com critérios BDD, regras de negócio e rastreabilidade | [`docs/02-backlog/user-stories/`](docs/02-backlog/user-stories/) — um arquivo por história (US-01 a US-04) |
+| Quando uma história está pronta para entrar na sprint (DoR) | [`docs/03-process/definition-of-ready.md`](docs/03-process/definition-of-ready.md) — checklist INVEST |
+| Quando uma história está concluída (DoD) | [`docs/03-process/definition-of-done.md`](docs/03-process/definition-of-done.md) — inclui 2 NFRs: Manutenibilidade e Testabilidade |
+| Como estimamos story points | [`docs/03-process/story-point-matrix.md`](docs/03-process/story-point-matrix.md) — escala Fibonacci + justificativa por US |
+| Planejamento da sprint (equipe, capacidade, goal) | [`docs/03-process/sprint-plan.md`](docs/03-process/sprint-plan.md) |
+| Estado do board (Kanban) | [`docs/04-board/board.md`](docs/04-board/board.md) — 29 SP planejados, 29 concluídos |
+| Prova de que cada história aponta para código real | [`docs/05-traceability/traceability-matrix.md`](docs/05-traceability/traceability-matrix.md) — US ↔ Use Case ↔ Endpoint ↔ Teste |
+
+As histórias seguem o formato da disciplina (Kalinowski): narrativa "Como / quero / para", critérios de aceitação em BDD (Dado / Quando / Então), quebra ARO (Ação + Resultado + Objeto) nas features, e DoD com requisitos não-funcionais verificáveis.
 
 ---
 
@@ -391,12 +459,14 @@ Todos seguem o mesmo padrão: classe com construtor que recebe ABCs por injeçã
 
 ## Histórias de Usuário
 
-| HU | Como... | Quero... | Para... | Use Cases |
-|---|---|---|---|---|
-| HU-01 | usuário | registrar uma transação (entrada ou saída) | acompanhar minhas finanças | `CriarTransacao`, `ListarTransacoes` |
-| HU-02 | usuário | criar categorias | organizar minhas transações | `CriarCategoria` |
-| HU-03 | usuário | consultar meu saldo atual (entradas - saídas) | saber quanto tenho | `CalcularSaldo`, `ListarTransacoes` |
-| HU-04 | usuário | ver o total por categoria | entender onde gasto mais | `TotalPorCategoria` |
+| ID | Como... | Quero... | Para... | Use Cases | SP | Detalhes |
+|---|---|---|---|---|---|---|
+| US-01 | João / Marina | registrar uma transação (entrada ou saída) | acompanhar minhas finanças | `CriarTransacao`, `ListarTransacoes` | 5 | [US-01](docs/02-backlog/user-stories/US-01-registrar-transacao.md) |
+| US-02 | João / Marina | criar categorias | organizar minhas transações | `CriarCategoria` | 3 | [US-02](docs/02-backlog/user-stories/US-02-criar-categoria.md) |
+| US-03 | João | consultar meu saldo atual (entradas − saídas) | saber quanto tenho disponível | `CalcularSaldo`, `ListarTransacoes` | 3 | [US-03](docs/02-backlog/user-stories/US-03-consultar-saldo.md) |
+| US-04 | Marina | ver o total por categoria | entender onde gasto mais | `TotalPorCategoria` | 5 | [US-04](docs/02-backlog/user-stories/US-04-total-por-categoria.md) |
+
+Cada link na coluna "Detalhes" leva ao arquivo completo da história com critérios de aceitação BDD, regras de negócio, DoR/DoD e rastreabilidade para o código.
 
 ---
 
@@ -536,8 +606,21 @@ TOTAL                                            144      0   100%
 
 | Critério (peso) | Como é atendido | Onde verificar |
 |---|---|---|
-| App funcional, >= 3 use cases, >= 2 entidades (4,0) | 5 use cases (`CriarTransacao`, `CriarCategoria`, `ListarTransacoes`, `CalcularSaldo`, `TotalPorCategoria`), 2 entidades (`Transacao`, `Categoria`), 6 endpoints REST funcionais + frontend web | `use_cases/`, `domain/entities/`, `app/routes/` |
-| Clean Architecture correta (2,0) | 4 camadas em pastas separadas (`domain/`, `use_cases/`, `app/`, `infra/`); dependências apontam só para dentro; golden rule respeitada; diagrama acima | Verificar imports de cada módulo |
-| SOLID correto (2,0) | SRP/OCP/LSP/ISP/DIP aplicados e comentados no código; tabela detalhada acima com arquivo, aplicação e justificativa para cada princípio | Comentários nos arquivos + tabela neste README |
-| Testes unitários dos use cases (1,0) | 39 testes, use cases testados com fakes in-memory, isolados de Flask/SQLite, 100% de cobertura em `domain/` e `use_cases/` | `pytest --cov` |
-| PEP-8 (1,0) | ruff configurado no `pyproject.toml` (E, F, W, I, N), zero warnings | `ruff check .` |
+| App funcional, >= 3 use cases, >= 2 entidades (4,0) | 5 use cases, 2 entidades, 4 histórias de usuário, 6 endpoints REST + frontend web | `use_cases/`, `domain/entities/`, `app/routes/`, [`docs/05-traceability/traceability-matrix.md`](docs/05-traceability/traceability-matrix.md) |
+| Clean Architecture correta (2,0) | 4 camadas em pastas separadas; dependências apontam só para dentro; diagrama e explicação neste README | Verificar imports de cada módulo; seção [Clean Architecture](#clean-architecture--mapa-detalhado) acima |
+| SOLID correto (2,0) | SRP/OCP/LSP/ISP/DIP aplicados e justificados por arquivo | Seção [SOLID](#solid--onde-e-por-quê) acima; NFR Manutenibilidade em [`docs/03-process/definition-of-done.md`](docs/03-process/definition-of-done.md) |
+| Testes unitários dos use cases (1,0) | 39 testes, use cases isolados com fakes in-memory, 100% cobertura em domain + use_cases | `pytest --cov`; [`docs/05-traceability/traceability-matrix.md`](docs/05-traceability/traceability-matrix.md) |
+| PEP-8 (1,0) | Ruff configurado no `pyproject.toml` (E, F, W, I, N), zero warnings | `ruff check .` |
+
+### Para a apresentação
+
+| Tema | O que mostrar | Arquivo-chave |
+|---|---|---|
+| **Funcionalidade** | Abrir `http://127.0.0.1:5000`, criar categoria, registrar transação, ver dashboard | `run.py` → navegar no browser |
+| **User stories** | Abrir uma US, mostrar narrativa, critérios BDD, regras de negócio | [`docs/02-backlog/user-stories/US-01-registrar-transacao.md`](docs/02-backlog/user-stories/US-01-registrar-transacao.md) |
+| **Clean Architecture** | Mostrar que `domain/` não importa nada externo; que use cases usam ABCs; que `app/main.py` faz o wiring | `domain/entities/transacao.py` (zero imports de Flask/SQLite) |
+| **SOLID — DIP** | Abrir `use_cases/criar_transacao.py` e mostrar que o construtor recebe ABCs | Comparar com `infra/repositories/transacao_repository_sqlite.py` |
+| **SOLID — LSP** | Mostrar que os fakes de teste implementam as mesmas ABCs que os repos SQLite | `tests/use_cases/conftest.py` |
+| **Testes** | Rodar `pytest -v` e `pytest --cov` ao vivo | Terminal |
+| **Rastreabilidade** | Abrir a matriz e mostrar que cada US aponta para código e testes reais | [`docs/05-traceability/traceability-matrix.md`](docs/05-traceability/traceability-matrix.md) |
+| **Processo ágil** | Mostrar DoR, DoD, board com burndown | [`docs/03-process/`](docs/03-process/), [`docs/04-board/board.md`](docs/04-board/board.md) |
