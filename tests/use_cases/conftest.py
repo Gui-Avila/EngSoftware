@@ -4,6 +4,8 @@ Implementam as mesmas ABCs que os repositórios SQLite, provando o DIP:
 o use case roda igual com fake ou com banco real, sem mudar uma linha.
 """
 
+from typing import Optional
+
 import pytest
 
 from domain.entities.categoria import Categoria
@@ -37,7 +39,7 @@ class FakeCategoriaRepository(CategoriaRepository):
     def salvar(self, categoria: Categoria) -> None:
         self._categorias[categoria.id] = categoria
 
-    def buscar_por_id(self, categoria_id: str) -> Categoria | None:
+    def buscar_por_id(self, categoria_id: str) -> Optional[Categoria]:
         return self._categorias.get(categoria_id)
 
     def listar(self) -> list[Categoria]:

@@ -3,6 +3,7 @@
 # necessário para validar categoria_id ao criar transação.
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from domain.entities.categoria import Categoria
 
@@ -15,7 +16,7 @@ class CategoriaRepository(ABC):
         """Persiste uma categoria."""
 
     @abstractmethod
-    def buscar_por_id(self, categoria_id: str) -> Categoria | None:
+    def buscar_por_id(self, categoria_id: str) -> Optional[Categoria]:
         """Retorna categoria pelo id, ou None se não existir."""
 
     @abstractmethod

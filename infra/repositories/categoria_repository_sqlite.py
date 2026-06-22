@@ -4,6 +4,7 @@
 
 import sqlite3
 from decimal import Decimal
+from typing import Optional
 
 from domain.entities.categoria import Categoria
 from use_cases.interfaces.categoria_repository import CategoriaRepository
@@ -23,7 +24,7 @@ class CategoriaRepositorySQLite(CategoriaRepository):
         )
         self._conn.commit()
 
-    def buscar_por_id(self, categoria_id: str) -> Categoria | None:
+    def buscar_por_id(self, categoria_id: str) -> Optional[Categoria]:
         row = self._conn.execute(
             "SELECT id, nome, limite_mensal FROM categorias WHERE id = ?",
             (categoria_id,),
