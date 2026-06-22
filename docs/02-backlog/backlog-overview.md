@@ -29,7 +29,7 @@ EPIC-03  Relatórios Financeiros
 |---|---|---|---|---|---|---|
 | US-01 | Story | Registrar transação financeira | EPIC-02 | 5 | Done | `use_cases/criar_transacao.py` |
 | US-02 | Story | Criar categoria de transação | EPIC-01 | 3 | Done | `use_cases/criar_categoria.py` |
-| US-03 | Story | Consultar saldo atual | EPIC-03 | 3 | Done | `use_cases/calcular_saldo.py` |
+| US-03 | Story | Consultar saldo atual | EPIC-03 | 3 | Done | `use_cases/calcular_saldo.py`, `use_cases/listar_transacoes.py` |
 | US-04 | Story | Visualizar totais por categoria | EPIC-03 | 5 | Done | `use_cases/total_por_categoria.py` |
 | EN-01 | Enabler | Estrutura Clean Architecture + DI | — | 3 | Done | `app/main.py`, `use_cases/interfaces/` |
 | EN-02 | Enabler | Camada de persistência SQLite | — | 5 | Done | `infra/` |

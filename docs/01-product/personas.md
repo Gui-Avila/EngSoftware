@@ -18,7 +18,7 @@ de preencher.
 
 **Relação com o FinTrack:** US-01 (registrar transações), US-02 (criar
 categorias como Alimentação, Transporte, Lazer), US-03 (consultar saldo
-atual).
+atual), US-04 (entender em quais categorias gasta mais).
 
 ---
 
@@ -40,5 +40,6 @@ Usa planilha, mas as fórmulas quebram quando adiciona linhas fora de ordem.
   compromissos.
 
 **Relação com o FinTrack:** US-01 (registrar entradas de clientes e saídas
-pessoais), US-02 (categorias por cliente e tipo de despesa), US-04
-(relatório por categoria para comparar receitas vs. despesas).
+pessoais), US-02 (categorias por cliente e tipo de despesa), US-03
+(saldo geral antes de assumir compromissos), US-04 (relatório por
+categoria para comparar receitas vs. despesas).

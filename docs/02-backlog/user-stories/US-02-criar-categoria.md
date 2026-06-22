@@ -87,7 +87,8 @@ automaticamente ao criar transações — serve como referência para o usuário
 ### Qualidade de código
 - [x] Código segue PEP-8 (verificado com `ruff check .`, zero erros)
 - [x] Use case `CriarCategoria` depende apenas da ABC `CategoriaRepository`
-- [x] Rota Flask não contém lógica de negócio — delega ao use case
+- [x] Rota `POST /categorias` delega ao use case sem lógica de negócio
+- [ ] Rota `GET /categorias` chama `categoria_repo.listar()` direto, sem use case (desvio documentado abaixo)
 
 ### NFR — Manutenibilidade
 - [x] Entidade `Categoria` é objeto puro Python sem dependência de framework ou banco

@@ -91,7 +91,7 @@ relatório em JSON com valores monetários como strings.
 ### NFR — Manutenibilidade
 - [x] `TotalCategoria` é dataclass pura de resultado, sem acoplamento a framework
 - [x] Use case importa apenas ABCs de `use_cases/interfaces/`
-- [x] Adicionar filtro por período não exigiria alterar a assinatura do repositório (basta novo método na ABC)
+- [x] Lógica de agregação encapsulada no use case, fora da rota e do repositório
 
 ### NFR — Testabilidade
 - [x] Use case testado com 4 cenários (vazio, sem transações, agrupamento, misto)
